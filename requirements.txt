@@ -73,3 +73,4 @@ urllib3==1.25.10
 wrapt==1.12.1
 zope.interface==5.4.0
 gunicorn==20.1.0
+typed_ast==1.5.3
