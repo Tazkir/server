@@ -1,0 +1,78 @@
+steps:
+  - name: "$_GCR_HOSTNAME/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "--no-cache",
+        "-t",
+        "$_GCR_HOSTNAME/$_PROJECT/$_SERVICE_NAME:$COMMIT_SHA",
+        "-f",
+        "Dockerfile",
+        ".",
+      ]
+    id: Build
+  - name: "$_GCR_HOSTNAME/cloud-builders/docker"
+    args: ["push", "$_GCR_HOSTNAME/$_PROJECT/$_SERVICE_NAME:$COMMIT_SHA"]
+    id: Push
+  - name: "$_GCR_HOSTNAME/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: bash
+    id: Deploy
+    args:
+      - -c
+      - >-
+        gcloud run services update $_SERVICE_NAME
+        --image $_GCR_HOSTNAME/$_PROJECT/$_SERVICE_NAME:$COMMIT_SHA
+        --region $_DEPLOY_REGION
+        --platform $_PLATFORM
+        --set-env-vars
+        "^<--->^CLOUD_RUN=1<--->
+        PIPELINE=$_PIPELINE<--->
+        DB_USER_NM=$_DB_USER_NM<--->
+        DB_USER_PW=$$DB_USER_PW<--->
+        DB_NAME=$_DB_NAME<--->
+        REDIS_HOST=$_REDIS_HOST<--->
+        INSTANCE_CONNECTION_NAME=$_INSTANCE_CONNECTION_NAME<--->
+        AWS_STORAGE_BUCKET_NAME=$_AWS_STORAGE_BUCKET_NAME<--->
+        AWS_ACCESS_KEY_ID=$$AWS_ACCESS_KEY_ID<--->
+        AWS_SECRET_ACCESS_KEY=$$AWS_SECRET_ACCESS_KEY<--->
+        MIXPANEL=$$MIXPANEL<--->
+        SECRET_KEY=$$SECRET_KEY<--->
+        SEND_GRID_KEY=$$SEND_GRID_KEY<--->
+        STRIPE_KEY=$$STRIPE_KEY<--->
+        STRIPE_LIGHT_PLAN=$_STRIPE_LIGHT_PLAN<--->
+        STRIPE_PRODUCTION_PLAN=$_STRIPE_PRODUCTION_PLAN<--->
+        STRIPE_PROFESSIONAL_PLAN=$_STRIPE_PROFESSIONAL_PLAN<--->
+        STRIPE_LIGHT_ANNUAL_PLAN=$_STRIPE_LIGHT_ANNUAL_PLAN<--->
+        STRIPE_PRODUCTION_ANNUAL_PLAN=$_STRIPE_PRODUCTION_ANNUAL_PLAN<--->
+        STRIPE_PROFESSIONAL_ANNUAL_PLAN=$_STRIPE_PROFESSIONAL_ANNUAL_PLAN<--->
+        STRIPE_TAX_RATE=$$STRIPE_TAX_RATE<--->
+        STRIPE_ANNUAL_PROMO=$_STRIPE_ANNUAL_PROMO"
+    secretEnv:
+      - "DB_USER_PW"
+      - "AWS_ACCESS_KEY_ID"
+      - "AWS_SECRET_ACCESS_KEY"
+      - "MIXPANEL"
+      - "SECRET_KEY"
+      - "SEND_GRID_KEY"
+      - "STRIPE_KEY"
+      - "STRIPE_TAX_RATE"
+images:
+  - $_GCR_HOSTNAME/$_PROJECT/$_SERVICE_NAME:$COMMIT_SHA
+availableSecrets:
+  secretManager:
+    - versionName: projects/480763924404/secrets/DB_USER_PW/versions/latest
+      env: DB_USER_PW
+    - versionName: projects/480763924404/secrets/AWS_ACCESS_KEY_ID/versions/latest
+      env: AWS_ACCESS_KEY_ID
+    - versionName: projects/480763924404/secrets/AWS_SECRET_ACCESS_KEY/versions/latest
+      env: AWS_SECRET_ACCESS_KEY
+    - versionName: projects/480763924404/secrets/MIXPANEL/versions/latest
+      env: MIXPANEL
+    - versionName: projects/480763924404/secrets/SECRET_KEY/versions/latest
+      env: SECRET_KEY
+    - versionName: projects/480763924404/secrets/SEND_GRID_KEY/versions/latest
+      env: SEND_GRID_KEY
+    - versionName: projects/480763924404/secrets/STRIPE_KEY/versions/latest
+      env: STRIPE_KEY
+    - versionName: projects/480763924404/secrets/STRIPE_TAX_RATE/versions/latest
+      env: STRIPE_TAX_RATE

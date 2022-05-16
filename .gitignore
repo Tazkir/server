@@ -1,0 +1,17 @@
+.dccache
+
+.env
+
+env/*
+venv/*
+secrets/*
+
+*.sqlite3
+notes.txt
+
+.idea/*
+*__pycache__*
+
+.dccache
+
+docker-compose.local.yml
