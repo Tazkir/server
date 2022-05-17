@@ -12,5 +12,7 @@ RUN python manage.py migrate
 RUN echo "from accounts.models import User; User.objects.create_superuser(email='admin@example.com', password='petak123')" | python manage.py shell
 # --- end ---
 
+# CMD gunicorn server.asgi:application --bind 0.0.0.0:$PORT
+
 CMD daphne -b 0.0.0.0 -p "${PORT}" server.asgi:application
 EXPOSE ${PORT}
